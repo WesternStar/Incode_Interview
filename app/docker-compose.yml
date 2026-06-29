@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: chinook
+      POSTGRES_PASSWORD: chinook
+      # The seed script itself does `DROP DATABASE IF EXISTS chinook; CREATE
+      # DATABASE chinook;`, which fails if the init connection is already
+      # sitting in the `chinook` DB. Use the default `postgres` maintenance
+      # DB for the init connection instead; the seed script creates and
+      # populates `chinook` itself.
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../Chinook_PostgreSql.sql:/docker-entrypoint-initdb.d/01-chinook.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chinook -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+    environment:
+      DATABASE_URL: postgres://chinook:chinook@postgres:5432/chinook
+      LISTEN_ADDR: ":8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:

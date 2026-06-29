@@ -1,0 +1,17 @@
+{{define "tracks.html"}}
+<thead>
+  <tr><th>Track</th><th>Composer</th><th>Length</th><th>Price</th></tr>
+</thead>
+<tbody>
+{{range .}}
+  <tr>
+    <td>{{.Name}}</td>
+    <td>{{.Composer}}</td>
+    <td>{{duration .Milliseconds}}</td>
+    <td>${{printf "%.2f" .UnitPrice}}</td>
+  </tr>
+{{else}}
+  <tr><td colspan="4">No tracks found</td></tr>
+{{end}}
+</tbody>
+{{end}}

@@ -1,0 +1,7 @@
+{{define "artists.html"}}
+{{range .}}
+<li hx-get="/artists/{{.ID}}/albums" hx-target="#albums" hx-swap="innerHTML">{{.Name}}</li>
+{{else}}
+<li>No artists found</li>
+{{end}}
+{{end}}
