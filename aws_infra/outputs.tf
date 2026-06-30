@@ -67,3 +67,28 @@ output "rds_password" {
   value       = random_password.db_master.result
   sensitive   = true
 }
+
+output "route53_zone_id" {
+  description = "Route 53 hosted zone ID"
+  value       = aws_route53_zone.this.zone_id
+}
+
+output "route53_name_servers" {
+  description = "Name servers for the hosted zone — delegate these at your registrar"
+  value       = aws_route53_zone.this.name_servers
+}
+
+output "acm_certificate_arn" {
+  description = "ARN of the validated ACM certificate"
+  value       = aws_acm_certificate_validation.this.certificate_arn
+}
+
+output "lbc_role_arn" {
+  description = "IAM role ARN for the AWS Load Balancer Controller"
+  value       = aws_iam_role.lbc.arn
+}
+
+output "external_dns_role_arn" {
+  description = "IAM role ARN for external-dns"
+  value       = aws_iam_role.external_dns.arn
+}

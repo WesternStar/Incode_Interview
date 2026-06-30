@@ -27,3 +27,14 @@ variable "demo_app_replicas" {
   type        = number
   default     = 2
 }
+
+variable "domain_name" {
+  description = "Root domain used for the app Ingress (must match the Route 53 zone in aws_infra/)"
+  type        = string
+}
+
+variable "app_subdomain" {
+  description = "Subdomain for the demo app (e.g. 'app' → app.example.com)"
+  type        = string
+  default     = "app"
+}

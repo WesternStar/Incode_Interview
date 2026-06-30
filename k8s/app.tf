@@ -102,14 +102,10 @@ resource "kubernetes_service" "demo_app" {
   metadata {
     name      = "demo-app"
     namespace = var.app_namespace
-    annotations = {
-      "service.beta.kubernetes.io/aws-load-balancer-type"   = "nlb"
-      "service.beta.kubernetes.io/aws-load-balancer-scheme" = "internet-facing"
-    }
   }
 
   spec {
-    type = "LoadBalancer"
+    type = "ClusterIP"
 
     selector = {
       app = "demo-app"
@@ -123,4 +119,45 @@ resource "kubernetes_service" "demo_app" {
   }
 
   depends_on = [kubernetes_deployment.demo_app]
+}
+
+resource "kubernetes_ingress_v1" "demo_app" {
+  metadata {
+    name      = "demo-app"
+    namespace = var.app_namespace
+    annotations = {
+      "kubernetes.io/ingress.class"                        = "alb"
+      "alb.ingress.kubernetes.io/scheme"                   = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"              = "ip"
+      "alb.ingress.kubernetes.io/certificate-arn"          = data.terraform_remote_state.infra.outputs.acm_certificate_arn
+      "alb.ingress.kubernetes.io/listen-ports"             = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
+      "alb.ingress.kubernetes.io/ssl-redirect"             = "443"
+      # external-dns reads this annotation to create the Route 53 A alias record.
+      "external-dns.alpha.kubernetes.io/hostname"          = "${var.app_subdomain}.${var.domain_name}"
+    }
+  }
+
+  spec {
+    rule {
+      host = "${var.app_subdomain}.${var.domain_name}"
+
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+
+          backend {
+            service {
+              name = kubernetes_service.demo_app.metadata[0].name
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  depends_on = [helm_release.aws_load_balancer_controller]
 }

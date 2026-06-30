@@ -99,3 +99,8 @@ variable "demo_app_replicas" {
   type        = number
   default     = 2
 }
+
+variable "domain_name" {
+  description = "Root domain name for the Route 53 hosted zone and ACM certificate (e.g. example.com)"
+  type        = string
+}

@@ -16,13 +16,24 @@ provider "kubernetes" {
   host                   = local.cluster_endpoint
   cluster_ca_certificate = base64decode(local.cluster_ca_data)
 
-  # Use the AWS CLI to mint a short-lived auth token instead of pulling in
-  # the AWS Terraform provider here -- keeps this config's only dependency
-  # on AWS being the `aws` CLI itself, so it stays fully decoupled from the
-  # infra/ AWS provisioning config.
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
     command     = "aws"
     args        = ["eks", "get-token", "--region", var.aws_region, "--cluster-name", local.cluster_name]
+  }
+}
+
+# Helm uses the same exec-plugin auth as the kubernetes provider — no AWS
+# Terraform provider required in this config.
+provider "helm" {
+  kubernetes {
+    host                   = local.cluster_endpoint
+    cluster_ca_certificate = base64decode(local.cluster_ca_data)
+
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      args        = ["eks", "get-token", "--region", var.aws_region, "--cluster-name", local.cluster_name]
+    }
   }
 }

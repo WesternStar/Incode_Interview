@@ -3,3 +3,5 @@ infra_state_path  = "../aws_infra/terraform.tfstate"
 app_namespace     = "default"
 demo_app_image    = "nginxdemos/hello"
 demo_app_replicas = 2
+domain_name       = "example.com"
+app_subdomain     = "app"

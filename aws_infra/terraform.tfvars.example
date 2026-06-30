@@ -11,3 +11,4 @@ db_instance_class   = "db.t3.micro"
 db_engine_version   = "17.4"
 demo_app_image      = "nginxdemos/hello"
 demo_app_replicas   = 2
+domain_name         = "example.com"
