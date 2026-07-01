@@ -25,8 +25,22 @@ module "eks" {
       max_size     = var.node_max_size
       desired_size = var.node_desired_size
 
-      # gp3 is cheaper than gp2 for the same performance.
-      disk_size = 20
+      # Setting block_device_mappings makes the module use a custom launch
+      # template, which is required to encrypt the node root volume — the
+      # plain `disk_size` argument only ever configures an unencrypted
+      # volume via the EKS API directly.
+      block_device_mappings = {
+        xvda = {
+          device_name = "/dev/xvda"
+          ebs = {
+            volume_size           = var.node_disk_size
+            volume_type           = "gp3"
+            encrypted             = true
+            kms_key_id            = aws_kms_key.ebs.arn
+            delete_on_termination = true
+          }
+        }
+      }
 
       labels = {
         role = "general"

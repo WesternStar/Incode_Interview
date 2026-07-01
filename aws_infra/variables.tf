@@ -52,6 +52,12 @@ variable "node_max_size" {
   default     = 3
 }
 
+variable "node_disk_size" {
+  description = "Root EBS volume size (GiB) for worker nodes"
+  type        = number
+  default     = 20
+}
+
 variable "db_instance_class" {
   description = "RDS instance class (kept small for cost)"
   type        = string
