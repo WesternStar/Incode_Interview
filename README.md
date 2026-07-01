@@ -116,7 +116,26 @@ kubectl -n kube-system get pods -l app.kubernetes.io/name=external-dns
 kubectl get ingress demo-app
 
 # Hit the app (replace with your actual subdomain)
-curl https://app.yourdomain.com
+curl https://music.yourdomain.com
+```
+
+## Monitoring (Prometheus + Grafana)
+
+`k8s/monitoring.tf` installs `kube-prometheus-stack` (Prometheus + Grafana),
+scraping the demo app's `/metrics` endpoint automatically. Grafana is exposed
+the same way as the app, at `https://grafana.yourdomain.com` (from the
+`grafana_subdomain` var).
+
+```bash
+# Grafana URL
+cd k8s && terraform output grafana_url
+
+# Grafana admin password (username: admin)
+terraform output -raw grafana_admin_password
+
+# Or read the password straight from the cluster instead of Terraform state:
+kubectl -n monitoring get secret grafana-admin-credentials \
+  -o jsonpath='{.data.admin-password}' | base64 -d
 ```
 
 ## Cost-saving choices

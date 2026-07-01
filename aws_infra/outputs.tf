@@ -83,6 +83,11 @@ output "acm_certificate_arn" {
   value       = aws_acm_certificate_validation.this.certificate_arn
 }
 
+output "ecr_repository_url" {
+  description = "ECR repository URL to push the app/ image to"
+  value       = aws_ecr_repository.demo_app.repository_url
+}
+
 output "lbc_role_arn" {
   description = "IAM role ARN for the AWS Load Balancer Controller"
   value       = aws_iam_role.lbc.arn

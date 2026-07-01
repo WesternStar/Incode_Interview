@@ -13,7 +13,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ../Chinook_PostgreSql.sql:/docker-entrypoint-initdb.d/01-chinook.sql:ro
+      - ./Chinook_PostgreSql_SerialPKs.sql:/docker-entrypoint-initdb.d/01-chinook.sql:ro
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U chinook -d postgres"]
@@ -25,7 +25,7 @@ services:
     build:
       context: .
     environment:
-      DATABASE_URL: postgres://chinook:chinook@postgres:5432/chinook
+      DATABASE_URL: postgres://chinook:chinook@postgres:5432/chinook_serial
       LISTEN_ADDR: ":8080"
     ports:
       - "8080:8080"
