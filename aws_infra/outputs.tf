@@ -44,48 +44,48 @@ output "configure_kubectl" {
 
 output "rds_address" {
   description = "RDS host (no port)"
-  value       = aws_db_instance.this.address
+  value       = module.rds.address
 }
 
 output "rds_port" {
   description = "RDS port"
-  value       = aws_db_instance.this.port
+  value       = module.rds.port
 }
 
 output "rds_database_name" {
   description = "Name of the initial database"
-  value       = aws_db_instance.this.db_name
+  value       = module.rds.db_name
 }
 
 output "rds_username" {
   description = "Master username for RDS"
-  value       = aws_db_instance.this.username
+  value       = module.rds.username
 }
 
 output "rds_password" {
   description = "Master password for RDS"
-  value       = random_password.db_master.result
+  value       = module.rds.password
   sensitive   = true
 }
 
 output "route53_zone_id" {
   description = "Route 53 hosted zone ID"
-  value       = aws_route53_zone.this.zone_id
+  value       = module.dns.zone_id
 }
 
 output "route53_name_servers" {
   description = "Name servers for the hosted zone — delegate these at your registrar"
-  value       = aws_route53_zone.this.name_servers
+  value       = module.dns.name_servers
 }
 
 output "acm_certificate_arn" {
   description = "ARN of the validated ACM certificate"
-  value       = aws_acm_certificate_validation.this.certificate_arn
+  value       = module.dns.certificate_arn
 }
 
 output "ecr_repository_url" {
   description = "ECR repository URL to push the app/ image to"
-  value       = aws_ecr_repository.demo_app.repository_url
+  value       = module.ecr.repository_url
 }
 
 output "lbc_role_arn" {

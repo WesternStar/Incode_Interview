@@ -10,6 +10,6 @@ output "grafana_url" {
 
 output "grafana_admin_password" {
   description = "Grafana admin password (username: admin)"
-  value       = random_password.grafana_admin.result
+  value       = module.monitoring.grafana_admin_password
   sensitive   = true
 }

@@ -1,10 +1,7 @@
-resource "aws_ecr_repository" "demo_app" {
-  name                 = "${var.project_name}-demo-app"
-  image_tag_mutability = "MUTABLE"
+module "ecr" {
+  source = "./modules/ecr"
 
-  image_scanning_configuration {
-    scan_on_push = true
-  }
+  repository_name = "${var.project_name}-demo-app"
 
   tags = {
     Name = "${var.project_name}-demo-app"
