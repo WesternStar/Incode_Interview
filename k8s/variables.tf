@@ -62,3 +62,9 @@ variable "kube_prometheus_stack_chart_version" {
   type        = string
   default     = "87.4.0"
 }
+
+variable "yace_chart_version" {
+  description = "Version of the nerdswords/yet-another-cloudwatch-exporter Helm chart"
+  type        = string
+  default     = "0.38.0"
+}
