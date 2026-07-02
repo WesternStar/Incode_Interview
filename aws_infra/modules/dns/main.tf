@@ -17,11 +17,17 @@ resource "aws_acm_certificate" "this" {
 }
 
 resource "aws_route53_record" "cert_validation" {
+  # A wildcard SAN shares the same validation CNAME as its base domain, so
+  # domain_validation_options can contain multiple entries with identical
+  # resource_record_name/value. Group by name and take one per group to
+  # avoid creating (or trying to create) the same record twice.
   for_each = {
-    for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      type   = dvo.resource_record_type
-      record = dvo.resource_record_value
+    for name, dvos in {
+      for dvo in aws_acm_certificate.this.domain_validation_options : dvo.resource_record_name => dvo...
+      } : name => {
+      name   = dvos[0].resource_record_name
+      type   = dvos[0].resource_record_type
+      record = dvos[0].resource_record_value
     }
   }
 

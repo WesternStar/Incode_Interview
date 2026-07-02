@@ -13,5 +13,5 @@ module "app" {
   domain_name         = var.domain_name
   acm_certificate_arn = data.terraform_remote_state.infra.outputs.acm_certificate_arn
 
-  depends_on = [helm_release.aws_load_balancer_controller]
+  depends_on = [helm_release.aws_load_balancer_controller, kubernetes_job_v1.seed_db]
 }

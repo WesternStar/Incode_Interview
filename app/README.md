@@ -84,5 +84,39 @@ cd ../k8s && terraform apply       # demo_app_image_tag defaults to "latest"
 `k8s/secret.tf` builds the `DATABASE_URL` the app needs from the RDS outputs
 in `aws_infra/` plus `var.demo_app_db_name` (defaults to `chinook_serial`,
 matching the database the seed script actually creates — see above). Don't
-forget to run `scripts/seed.sh` against the RDS instance before traffic hits
-the app, or the queries will return nothing.
+forget to seed the RDS instance before traffic hits the app, or the queries
+will return nothing — see below, since `scripts/seed.sh` can't reach it
+directly from your machine.
+
+## Seeding RDS from inside the cluster
+
+The RDS instance in `aws_infra/` is *not* publicly accessible — its
+security group only allows traffic from the EKS node security group (see
+`allowed_security_group_ids` in `aws_infra/rds.tf`). So `scripts/seed.sh`
+can't be pointed at the RDS endpoint from your laptop; it has to run from a
+pod inside the cluster, which shares that network path.
+
+```bash
+# 1. Start a throwaway pod with a psql client and keep it alive.
+kubectl run seed-psql --image=postgres:16-alpine --restart=Never -n default \
+  --command -- sleep 3600
+kubectl wait --for=condition=Ready pod/seed-psql -n default --timeout=60s
+
+# 2. Copy the seed file into the pod (scripts/seed.sh expects it one
+#    directory up, as Chinook_PostgreSql_SerialPKs.sql).
+kubectl cp Chinook_PostgreSql_SerialPKs.sql default/seed-psql:/tmp/seed.sql
+
+# 3. Run it against the RDS maintenance DB — the script's `\c chinook_serial`
+#    creates the real database as a side effect (see above).
+RDS_ADDR=$(cd ../aws_infra && terraform output -raw rds_address)
+RDS_PW=$(cd ../aws_infra && terraform output -raw rds_password)
+kubectl exec -n default seed-psql -- env \
+  DATABASE_URL="postgres://appadmin:${RDS_PW}@${RDS_ADDR}:5432/postgres" \
+  sh -c 'psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f /tmp/seed.sql'
+
+# 4. Clean up, then bounce the app so it reconnects now that the DB exists
+#    (it crash-loops on startup if chinook_serial is missing).
+kubectl delete pod seed-psql -n default
+kubectl rollout restart deployment/demo-app -n default
+kubectl rollout status deployment/demo-app -n default
+```

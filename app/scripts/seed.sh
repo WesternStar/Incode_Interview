@@ -9,6 +9,6 @@ if [[ -z "${DATABASE_URL:-}" ]]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SEED_FILE="$SCRIPT_DIR/../../Chinook_PostgreSql.sql"
+SEED_FILE="$SCRIPT_DIR/../Chinook_PostgreSql_SerialPKs.sql"
 
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$SEED_FILE"

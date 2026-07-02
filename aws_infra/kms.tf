@@ -34,6 +34,15 @@ resource "aws_kms_alias" "rds" {
 # ---------------------------------------------------------------------------
 # KMS key for EKS worker node EBS root volume encryption
 # ---------------------------------------------------------------------------
+# The autoscaling.amazonaws.com service-linked role isn't created until the
+# first Auto Scaling Group is provisioned in the account. Our node group's
+# ASG can't exist yet (it needs this KMS key first), so the role won't exist
+# when the key policy below references it — create it explicitly to break
+# the chicken-and-egg dependency.
+resource "aws_iam_service_linked_role" "autoscaling" {
+  aws_service_name = "autoscaling.amazonaws.com"
+}
+
 data "aws_iam_policy_document" "kms_ebs" {
   statement {
     sid       = "EnableIAMUserPermissions"
@@ -64,7 +73,7 @@ data "aws_iam_policy_document" "kms_ebs" {
 
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"]
+      identifiers = [aws_iam_service_linked_role.autoscaling.arn]
     }
   }
 }
