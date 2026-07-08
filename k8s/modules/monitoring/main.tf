@@ -29,6 +29,23 @@ resource "kubernetes_secret" "grafana_admin" {
   type = "Opaque"
 }
 
+# Picked up by the grafana-sc-dashboard sidecar (LABEL=grafana_dashboard,
+# LABEL_VALUE=1, watching all namespaces), which drops each data key into
+# /tmp/dashboards and calls Grafana's provisioning reload API.
+resource "kubernetes_config_map" "grafana_dashboard_requests_status_and_latency" {
+  metadata {
+    name      = "grafana-dashboard-requests-status-and-latency"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+    labels = {
+      grafana_dashboard = "1"
+    }
+  }
+
+  data = {
+    "requests-status-and-latency.json" = file("${path.module}/dashboards/requests-status-and-latency.json")
+  }
+}
+
 locals {
   # Standard naming the kube-prometheus-stack chart gives its Grafana
   # subchart service: "<helm release name>-grafana".
@@ -116,8 +133,8 @@ resource "helm_release" "kube_prometheus_stack" {
           enabled = false
         }
         resources = {
-          requests = { cpu = "50m", memory = "128Mi" }
-          limits   = { cpu = "200m", memory = "256Mi" }
+          requests = { cpu = "200m", memory = "256Mi" }
+          limits   = { cpu = "1000m", memory = "512Mi" }
         }
         service = {
           type = "ClusterIP"
